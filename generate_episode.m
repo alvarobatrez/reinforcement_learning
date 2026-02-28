@@ -1,38 +1,45 @@
 function [states, actions_taken, rewards] = generate_episode(M, pi, start_position, goal_position, actions, num_actions, max_steps, m, n)
-
-state = start_position;
-i = state(1);
-j = state(2);
-states = zeros(max_steps, 2);
-actions_taken = zeros(max_steps, 1);
-rewards = zeros(max_steps, 1);
-step = 1;
-
-while ~isequal(state, goal_position) && step <= max_steps
-    states(step, :) = state;
-    actions_probabilities = squeeze(pi(i, j, :));
-    action = randsample(1:num_actions, 1, true, actions_probabilities);
-    new_i = i + actions(action, 1);
-    new_j = j + actions(action, 2);
-
-    if new_i < 1 || new_i > m || new_j < 1 || new_j > n
-        reward = -2;
-    else
-        reward = M(new_i, new_j);
+    % Genera un episodio siguiendo la política pi desde start_position hasta goal_position
+    % o hasta alcanzar max_steps pasos
+    
+    state = start_position;
+    i = state(1);
+    j = state(2);
+    states = zeros(max_steps, 2);
+    actions_taken = zeros(max_steps, 1);
+    rewards = zeros(max_steps, 1);
+    step = 1;
+    
+    while ~isequal(state, goal_position) && step <= max_steps
+        states(step, :) = state;
         
-        if reward == -1 || reward == 10
-            i = new_i;
-            j = new_j;
+        % Muestrear acción según la política ε-soft
+        actions_probabilities = squeeze(pi(i, j, :));
+        action = randsample(1:num_actions, 1, true, actions_probabilities);
+        
+        % Calcular siguiente estado tentativo
+        next_i = i + actions(action, 1);
+        next_j = j + actions(action, 2);
+        
+        % Manejo de límites y paredes: rebote con penalización
+        if next_i < 1 || next_i > m || next_j < 1 || next_j > n || M(next_i, next_j) == -2
+            reward = -2;        % Penalización por chocar
+            % Permanece en el mismo estado (rebote)
+        else
+            reward = M(next_i, next_j);  % Recompensa del estado destino
+            i = next_i;         % Actualiza posición
+            j = next_j;
         end
+        
+        state = [i j];
+        actions_taken(step) = action;
+        rewards(step) = reward;
+        
+        step = step + 1;
     end
     
-    state = [i j];
-    actions_taken(step) = action;
-    rewards(step) = reward;
-
-    step = step + 1;
+    % Truncar vectores al tamaño real del episodio
+    states = states(1 : step-1, :);
+    actions_taken = actions_taken(1 : step-1);
+    rewards = rewards(1 : step-1);
 end
-
-states = states(1 : step-1, :);
-actions_taken = actions_taken(1 : step-1);
-rewards = rewards(1:step-1);

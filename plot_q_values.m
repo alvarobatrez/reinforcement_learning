@@ -1,5 +1,8 @@
 function plot_q_values(Q)
-    [rows, cols, actions] = size(Q);
+    % Visualiza la función de acción-valor Q como un heatmap dividido por celdas
+    % Cada celda muestra 4 triángulos (uno por acción) con el valor Q correspondiente
+    
+    [rows, cols, num_actions] = size(Q);
 
     figure, hold on
     set(gcf, 'Position', [100, 100, 800, 800]);
@@ -14,12 +17,14 @@ function plot_q_values(Q)
 
     for i = 1 : rows
         for j = 1 : cols
-            for a = 1 : actions
+            for a = 1 : num_actions
                 value = Q(i,j,a);
                 if value == 0
                     value = NaN;
                 end
 
+                % Definir triángulo según la dirección de la acción
+                % 1=arriba, 2=derecha, 3=abajo, 4=izquierda
                 if a == 1
                     x = [j j+0.5 j+1];
                     y = [i i+0.5 i];
@@ -38,8 +43,10 @@ function plot_q_values(Q)
                     text_pos = [j+0.25 i+0.5];
                 end
                 
+                % Dibujar triángulo con color según valor Q
                 patch(x, rows-y, value, 'EdgeColor','none');
 
+                % Calcular color de texto según luminosidad del fondo
                 normalized_value = (value - clims(1)) / (clims(2) - clims(1));
                 normalized_value = min(max(normalized_value, 0), 1);
                 idx = round(normalized_value * (N - 1)) + 1;
@@ -60,6 +67,6 @@ function plot_q_values(Q)
         end
     end
 
-    title('Función de Acción-Valor')
+    title('Función de Acción-Valor Q(s,a)')
     axis off
 end
