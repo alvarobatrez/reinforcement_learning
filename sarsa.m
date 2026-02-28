@@ -1,5 +1,6 @@
-close all; clear, clc
+close all; clear; clc
 
+% Carga del laberinto y definición de acciones: arriba, derecha, abajo, izquierda
 M = create_maze();
 actions = [-1 0; 0 1; 1 0; 0 -1];
 
@@ -9,31 +10,58 @@ start_position = [1 2];
 [m, n] = size(M);
 num_actions = length(actions);
 
-alpha = 0.1;
-gamma = 0.99;
-epsilon = 1;
-decay = 0.99;
+% Parámetros del algoritmo
+alpha = 0.1;        % Tasa de aprendizaje
+gamma = 0.99;       % Factor de descuento
+epsilon = 1;        % Parámetro de exploración inicial
+decay = 0.99;       % Decaimiento de epsilon
 num_episodes = 1000;
+max_steps = 1e4;  % Límite de pasos por episodio (evita loops infinitos)
 
+% Inicialización de la tabla Q
 Q = zeros(m, n, num_actions);
 
+% Algoritmo SARSA (State-Action-Reward-State-Action)
+% On-policy TD Control con política epsilon-greedy
+% Actualización: Q(s,a) = Q(s,a) + alpha * [R + gamma * Q(s',a') - Q(s,a)]
 for episode = 1 : num_episodes
-    epsilon = max(0.1, decay*epsilon);
+    epsilon = max(0.1, decay * epsilon);
     state = start_position;
+    step_count = 0;
     
-    while ~isequal(state, [goal_row goal_col])
-        action = egreedy_action(epsilon, Q, state, num_actions);
-        [next_state, reward, ~] = step(M, state, action, actions, m, n);
-        next_action = egreedy_action(epsilon, Q, next_state, num_actions);
-        Q(state(1), state(2), action) = Q(state(1), state(2), action) + ...
-            alpha * (reward + gamma * Q(next_state(1), next_state(2), next_action) - Q(state(1), state(2), action));
+    % Seleccionar acción inicial usando política epsilon-greedy
+    action = egreedy_action(epsilon, Q, state, num_actions);
+    
+    % Iterar hasta llegar a la meta o exceder el límite de pasos
+    while ~isequal(state, [goal_row goal_col]) && step_count < max_steps
+        % Tomar acción A, observar recompensa R y siguiente estado S'
+        [next_state, reward, done] = step(M, state, action, actions, m, n);
+        step_count = step_count + 1;
+        
+        if done
+            % Estado terminal: no hay acción siguiente, Q(s',a') = 0
+            % Actualización: Q(s,a) = Q(s,a) + alpha * [R - Q(s,a)]
+            Q(state(1), state(2), action) = Q(state(1), state(2), action) + ...
+                alpha * (reward - Q(state(1), state(2), action));
+        else
+            % Seleccionar siguiente acción A' usando política epsilon-greedy
+            next_action = egreedy_action(epsilon, Q, next_state, num_actions);
+            
+            % Actualización SARSA estándar
+            Q(state(1), state(2), action) = Q(state(1), state(2), action) + ...
+                alpha * (reward + gamma * Q(next_state(1), next_state(2), next_action) - ...
+                Q(state(1), state(2), action));
+            
+            action = next_action;
+        end
+        
         state = next_state;
-        action = next_action;
     end
     
     fprintf('Episodio: %d\n', episode)
 end
 
+% Extraer política greedy final
 [~, policy] = max(Q, [], 3);
 policy(M==-2) = 0;
 policy(M==10) = 0;
