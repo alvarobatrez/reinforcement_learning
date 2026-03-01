@@ -1,41 +1,91 @@
-# Prerequisites
-*.d
+# Backups
+*.asv
+*.m~
+*.mex*
+*~
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+# Configuración
+*.mat
+matlab.prefs
+pathdef.m
+history.m
+startup.m
+finish.m
 
-# Precompiled Headers
-*.gch
-*.pch
+# Simulink
+*.slx.autosave
+*.slx.r*
+*.mdl.autosave
+*.mdl.r*
+slprj/
+rtw/
+*_grt_rtw/
+*_ert_rtw/
+*.rtw
+tornado/
+*.cdf
+*.cache/
+*.slxc
+*.mexw64
+*.mexw32
+*.mexa64
+*.mexmaci64
+*.mexmaca64
 
-# Linker files
-*.ilk
+# Stateflow
+*.sf.autosave
+*_sfun.mex*
+sfun.mex*
 
-# Debugger Files
-*.pdb
+# App Designer
+*.mlappinstall
+*.mltbx
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
+# Resultados
+*.sim
+*.results
+output/
+results/
+data/output/
+simulation_output/
+*.log
+diary.txt
 
-# Fortran module files
-*.mod
-*.smod
+# Sistema
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.nfs*
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
+# IDEs
+.vscode/
+*.code-workspace
+*.prj
 
-# Executables
-*.exe
-*.out
-*.app
+# Control de versiones
+.externalToolBuilders/
 
-# debug information files
-*.dwo
+# Hardware/targets
+*.sldrt
+slrt_*/
+*.plc
+hdl_prj/
+codegen/
+plc_coder_gen/
+
+# Documentación
+html/
+helpsearch*/
+doc/
+
+# Pruebas
+*.testreport
+*.coverage
+coverage/
+testresults/
+*.profile

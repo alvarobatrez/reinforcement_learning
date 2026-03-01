@@ -23,7 +23,7 @@ gamma = 0.99;             % Factor de descuento
 epsilon = 1;              % Parámetro de exploración inicial (epsilon-greedy)
 decay = 0.995;            % Decaimiento de epsilon por episodio
 num_episodes = 3000;
-max_steps = 1e4;        % Límite de pasos por episodio (evita ciclos infinitos)
+max_steps = 1e5;        % Límite de pasos por episodio (evita ciclos infinitos)
 
 % Parámetros del Experience Replay (Replay de Experiencias)
 buffer_capacity = 1e5;    % Capacidad máxima del buffer
