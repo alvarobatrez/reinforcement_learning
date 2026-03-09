@@ -22,11 +22,11 @@ tau = 0.005;              % Factor de actualización suave del target network (s
 gamma = 0.99;             % Factor de descuento
 epsilon = 1;              % Parámetro de exploración inicial (epsilon-greedy)
 decay = 0.995;            % Decaimiento de epsilon por episodio
-num_episodes = 3000;
+num_episodes = 1500;
 max_steps = 1e5;        % Límite de pasos por episodio (evita ciclos infinitos)
 
 % Parámetros del Experience Replay (Replay de Experiencias)
-buffer_capacity = 1e5;    % Capacidad máxima del buffer
+buffer_capacity = 1e4;    % Capacidad máxima del buffer
 batch_size = 128;         % Tamaño del batch para entrenamiento
 buffer = ExperienceReplay(buffer_capacity);
 
@@ -55,7 +55,7 @@ total_returns = zeros(num_episodes, 1);
 % Bucle principal de entrenamiento por episodios
 for episode = 1 : num_episodes
     % Decaimiento de epsilon (exploración -> explotación)
-    epsilon = max(0.1, decay * epsilon);
+    epsilon = max(0.01, decay * epsilon);
     
     state = start_position;
     steps = 0;
@@ -130,9 +130,9 @@ save('model_deep_sarsa.mat', 'q_network')
 policy = create_policy(q_network, M);
 
 % Visualizar resultados
-subplot(2,1,1), plot(1:num_episodes, total_returns), grid on
+subplot(2,1,1), semilogy(1:num_episodes, total_returns), grid on
 title('Retornos'), xlabel('Épocas'), ylabel('Retorno')
-subplot(2,1,2), plot(1:num_episodes, total_loss), grid on
+subplot(2,1,2), semilogy(1:num_episodes, total_loss), grid on
 title('Pérdida'), xlabel('Épocas'), ylabel('Error MSE')
 
 % Simular trayectoria con la política aprendida

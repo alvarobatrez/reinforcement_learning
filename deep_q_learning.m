@@ -23,11 +23,11 @@ tau = 0.005;              % Factor de soft update (polyak averaging)
 gamma = 0.99;             % Factor de descuento
 epsilon = 1;              % Exploración inicial
 decay = 0.995;            % Decaimiento de epsilon
-num_episodes = 3000;      
+num_episodes = 1500;      
 max_steps = 1e5;         % Límite de pasos por episodio
 
 % Experience Replay
-buffer_capacity = 1e5;  % Capacidad del buffer
+buffer_capacity = 1e4;  % Capacidad del buffer
 batch_size = 128;         % Tamaño del batch
 buffer = ExperienceReplay(buffer_capacity);
 
@@ -48,7 +48,7 @@ target_network = target_network.compile(learning_rate, optimizer, loss_function)
 target_network = copy_weights(q_network, target_network);
 
 % Contadores para control de actualización del target
-target_update_freq = 100;  % Actualizar target cada 100 pasos de entrenamiento
+target_update_freq = 10;  % Actualizar target cada 100 pasos de entrenamiento
 training_step = 0;         % Contador de pasos de entrenamiento
 
 % Historiales
@@ -57,7 +57,7 @@ total_returns = zeros(num_episodes, 1);
 
 % Bucle principal de entrenamiento
 for episode = 1 : num_episodes
-    epsilon = max(0.1, decay * epsilon);
+    epsilon = max(0.01, decay * epsilon);
     state = start_position;
     steps = 0;
     loss = 0;
@@ -132,9 +132,9 @@ save('model_q_learning.mat', 'q_network')
 policy = create_policy(q_network, M);
 
 % Visualizar resultados
-subplot(2,1,1), plot(1:num_episodes, total_returns), grid on
+subplot(2,1,1), semilogy(1:num_episodes, total_returns), grid on
 title('Retornos DQN'), xlabel('Épocas'), ylabel('Retorno')
-subplot(2,1,2), plot(1:num_episodes, total_loss), grid on
+subplot(2,1,2), semilogy(1:num_episodes, total_loss), grid on
 title('Pérdida DQN'), xlabel('Épocas'), ylabel('Error MSE')
 
 % Simular trayectoria óptima
