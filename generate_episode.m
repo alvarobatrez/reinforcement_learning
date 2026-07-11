@@ -1,7 +1,7 @@
-function [states, actions_taken, rewards] = generate_episode(M, pi, start_position, goal_position, actions, num_actions, max_steps, m, n)
-    % Genera un episodio siguiendo la política pi desde start_position hasta goal_position
+function [states, actions_taken, rewards] = generate_episode(M, policy, start_position, goal_position, actions, num_actions, max_steps, m, n)
+    % Genera un episodio siguiendo la política policy desde start_position hasta goal_position
     % o hasta alcanzar max_steps pasos
-    
+
     state = start_position;
     i = state(1);
     j = state(2);
@@ -9,12 +9,12 @@ function [states, actions_taken, rewards] = generate_episode(M, pi, start_positi
     actions_taken = zeros(max_steps, 1);
     rewards = zeros(max_steps, 1);
     step = 1;
-    
+
     while ~isequal(state, goal_position) && step <= max_steps
         states(step, :) = state;
-        
+
         % Muestrear acción según la política ε-soft
-        actions_probabilities = squeeze(pi(i, j, :));
+        actions_probabilities = squeeze(policy(i, j, :));
         action = randsample(1:num_actions, 1, true, actions_probabilities);
         
         % Calcular siguiente estado tentativo

@@ -19,6 +19,8 @@ function plot_q_values(Q)
         for j = 1 : cols
             for a = 1 : num_actions
                 value = Q(i,j,a);
+
+                % Únicamente para efectos visuales
                 if value == 0
                     value = NaN;
                 end
