@@ -35,18 +35,24 @@ classdef NeuralNetwork
             model.v = cell(1, model.num_layers);
 
             for i = 1 : model.num_layers
-                % Inicialización He (Kaiming): sqrt(2/n_in)
-                % Adecuada para activaciones ReLU
+                % Tamaño de entrada de la capa (incluye bias)
                 if i == 1
-                    % Primera capa: input_size + 1 (incluye bias) entradas
-                    weights = randn(layers{i}{1}, input_size + 1) * sqrt(2 / (input_size + 1));
+                    fan_in = input_size + 1;
                 else
-                    % Capas siguientes: neuronas_capa_anterior + 1 entradas
-                    weights = randn(layers{i}{1}, layers{i - 1}{1} + 1) * sqrt(2 / (layers{i - 1}{1} + 1));
+                    fan_in = layers{i - 1}{1} + 1;
+                end
+
+                % Inicialización según la función de activación:
+                %   ReLU   -> He   (sqrt(2/fan_in))
+                %   sigmoid/tanh -> Xavier (sqrt(1/fan_in))
+                if strcmp(layers{i}{2}, 'relu')
+                    weights = randn(layers{i}{1}, fan_in) * sqrt(2 / fan_in);
+                else  % sigmoid, tanh y demás
+                    weights = randn(layers{i}{1}, fan_in) * sqrt(1 / fan_in);
                 end
 
                 model.layers{i} = struct('weights', weights, 'activation', layers{i}{2});
-                
+
                 % Inicializar momentos Adam/AdamW en cero
                 model.m{i} = zeros(size(weights));
                 model.v{i} = zeros(size(weights));
@@ -231,7 +237,8 @@ classdef NeuralNetwork
 
                 % Backward pass y actualización
                 grad = compute_gradients(model, batch_size, outputs, Y);
-                model = update_weights(model, grad); 
+                model.t = model.t + 1;  % Contador de iteraciones para corrección de sesgo de Adam
+                model = update_weights(model, grad);
                 
                 history(epoch) = loss;
             end

@@ -11,9 +11,7 @@ function model = adam(model, grad, i)
     %   w = w - lr * m_hat / (sqrt(v_hat) + epsilon)
     %
     % Parámetros típicos: beta1=0.9, beta2=0.999, epsilon=1e-8
-    
-    model.t = model.t + 1;
-    
+
     % Actualizar momentos
     model.m{i} = model.beta1 * model.m{i} + (1 - model.beta1) * grad{i};
     model.v{i} = model.beta2 * model.v{i} + (1 - model.beta2) * (grad{i}.^2);

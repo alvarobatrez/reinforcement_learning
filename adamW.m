@@ -13,8 +13,6 @@ function model = adamW(model, grad, i)
     % A diferencia de L2 regular en Adam, el decaimiento se aplica directamente
     % a los pesos, no al gradiente, lo que permite mejor regularización.
     
-    model.t = model.t + 1;
-    
     % Actualizar momentos (igual que Adam)
     model.m{i} = model.beta1 * model.m{i} + (1 - model.beta1) * grad{i};
     model.v{i} = model.beta2 * model.v{i} + (1 - model.beta2) * (grad{i}.^2);
