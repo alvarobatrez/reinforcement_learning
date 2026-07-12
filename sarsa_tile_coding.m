@@ -113,8 +113,6 @@ draw_response(Q, actions, num_actions, initial_conditions, n_tilings, tilings_v,
 figure, plot(1:num_episodes, sum_returns)
 xlabel('Episodio'), ylabel('Retornos'), title('SARSA con Tile Coding - Control Motor DC')
 
-t = (0 : t_steps-1) * Ts;
-
 function [tilings_v, tilings_w] = create_tilings(bins, low, high, n)
     % Crea n tilings (rejillas desplazadas) para tile coding
     % Cada tiling tiene un offset aleatorio para generalizar mejor
