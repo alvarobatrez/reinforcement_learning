@@ -36,7 +36,7 @@ buffer = ExperienceReplay(buffer_capacity);
 num_inputs = 2;
 layers = {{32, 'relu'} {16, 'relu'} {num_actions, 'linear'}};  % Capa de salida lineal (Q-values)
 
-learning_rate = 0.001;
+learning_rate = 0.0001;
 optimizer = 'adamW';
 loss_function = 'mse';
 
@@ -103,21 +103,21 @@ for episode = 1 : num_episodes
             
             % Backpropagation: actualizar Q-network para minimizar (target - Q)^2
             q_network = backpropagation(q_network, batch_size, state_b, target_b, action_b);
-            
-            % Soft update del target network (copia suave de pesos)
-            % theta_target = tau * theta_q + (1-tau) * theta_target
-            target_network = update_target_network(q_network, target_network, tau);
-            
+
             % Actualizar métricas de pérdida (media móvil exponencial)
             n_updates = n_updates + 1;
             mse_error = mean((target_b - current_q_b).^2);
             loss = loss + (1 / n_updates) * (mse_error - loss);
-        end        
-        
+        end
+
         state = next_state;
         G = G + reward;
     end
-    
+
+    % Soft update del target network una vez por episodio (copia suave de pesos)
+    % theta_target = tau * theta_q + (1-tau) * theta_target
+    target_network = update_target_network(q_network, target_network, tau);
+
     total_loss(episode) = loss;
     total_returns(episode) = G;
     fprintf('Episodio: %d, Pasos: %d, Retorno: %d, Pérdida: %.2f\n', episode, steps, G, loss)
