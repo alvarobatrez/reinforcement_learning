@@ -32,16 +32,17 @@ for episode = 1 : num_episodes
     % Seleccionar acción inicial A_0
     action = egreedy_action(epsilon, Q, state, num_actions);
     
-    % Almacenar trayectoria del episodio
-    % states(1) = S_0, states(k) = S_{k-1}
-    % actions_taken(1) = A_0, actions_taken(k) = A_{k-1}
-    % rewards(1) = R_1, rewards(k) = R_k (recompensa después de A_{k-1})
-    states = [];
-    actions_taken = [];
-    rewards = [];
-    
-    states(end + 1, :) = state;
-    actions_taken(end + 1) = action;
+    % Preasignación de la trayectoria del episodio.
+    % Indexado por tiempo: states(1)=S_0, states(k)=S_{k-1};
+    % actions_taken(1)=A_0, actions_taken(k)=A_{k-1};
+    % rewards(1)=R_1, rewards(k)=R_k (recompensa después de A_{k-1}).
+    % El tamaño es suficiente para el peor caso (episodio de max_steps transiciones).
+    states = zeros(max_steps + 1, 2);
+    actions_taken = zeros(max_steps + 1, 1);
+    rewards = zeros(max_steps + 1, 1);
+
+    states(1, :) = state;       % S_0
+    actions_taken(1) = action;  % A_0
     
     T = inf;            % Tiempo de terminación (infinito mientras no termine)
     t = 0;              % Contador de tiempo (paso actual)
@@ -51,17 +52,17 @@ for episode = 1 : num_episodes
         if t < T
             % Tomar acción A_t, observar R_{t+1}, S_{t+1}
             [next_state, reward, done] = step(M, state, action, actions, m, n);
-            states(end + 1, :) = next_state;      % Guardar S_{t+1}
-            rewards(end + 1) = reward;            % Guardar R_{t+1}
+            states(t + 2, :) = next_state;    % Guardar S_{t+1}
+            rewards(t + 1) = reward;          % Guardar R_{t+1}
             step_count = step_count + 1;
-            
+
             if done || isequal(next_state, [goal_row goal_col])
                 % Estado terminal: episodio termina en tiempo T = t+1
                 T = t + 1;
             else
                 % Seleccionar siguiente acción A_{t+1} usando política epsilon-greedy
                 next_action = egreedy_action(epsilon, Q, next_state, num_actions);
-                actions_taken(end + 1) = next_action;  % Guardar A_{t+1}
+                actions_taken(t + 2) = next_action;  % Guardar A_{t+1}
             end
             
             % Avanzar al siguiente estado
