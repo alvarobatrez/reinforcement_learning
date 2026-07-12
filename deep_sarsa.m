@@ -21,20 +21,20 @@ num_actions = length(actions);
 tau = 0.005;              % Factor de actualización suave del target network (soft update)
 gamma = 0.99;             % Factor de descuento
 epsilon = 1;              % Parámetro de exploración inicial (epsilon-greedy)
-decay = 0.995;            % Decaimiento de epsilon por episodio
+decay = 0.99;            % Decaimiento de epsilon por episodio
 num_episodes = 1500;
-max_steps = 1e5;        % Límite de pasos por episodio (evita ciclos infinitos)
+max_steps = 1e4;        % Límite de pasos por episodio (evita ciclos infinitos)
 
 % Parámetros del Experience Replay (Replay de Experiencias)
 buffer_capacity = 1e4;    % Capacidad máxima del buffer
-batch_size = 128;         % Tamaño del batch para entrenamiento
+batch_size = 32;         % Tamaño del batch para entrenamiento
 buffer = ExperienceReplay(buffer_capacity);
 
 % Arquitectura de la red neuronal Q
 % Entrada: posición (fila, columna) -> Estado 2D
 % Salida: valor Q para cada una de las 4 acciones
 num_inputs = 2;
-layers = {{128, 'relu'} {64, 'relu'} {num_actions, 'linear'}};  % Capa de salida lineal (Q-values)
+layers = {{32, 'relu'} {16, 'relu'} {num_actions, 'linear'}};  % Capa de salida lineal (Q-values)
 
 learning_rate = 0.001;
 optimizer = 'adamW';
@@ -67,7 +67,7 @@ for episode = 1 : num_episodes
         steps = steps + 1;
         
         % Seleccionar acción usando política epsilon-greedy
-        action = egreedy_action(epsilon, q_network, state, num_actions);
+        action = epsilon_greedy_action(epsilon, q_network, state, num_actions);
         
         % Ejecutar acción en el entorno
         [next_state, reward, done] = step(M, state, action, actions, m, n);
@@ -89,7 +89,7 @@ for episode = 1 : num_episodes
             
             % SARSA: Seleccionar A' usando la misma política (on-policy)
             % Nota: Usamos q_network (política actual) para seleccionar la acción
-            next_action_b = egreedy_action(epsilon, q_network, next_state_b, num_actions);
+            next_action_b = epsilon_greedy_action(epsilon, q_network, next_state_b, num_actions);
             
             % Evaluar Q(S', A') usando el target network (para estabilidad)
             next_q_b = gather_q(target_network, next_state_b, next_action_b, batch_size);
@@ -147,7 +147,7 @@ function model_copy = copy_weights(model_original, model_copy)
     end
 end
 
-function action = egreedy_action(epsilon, model, state, num_actions)
+function action = epsilon_greedy_action(epsilon, model, state, num_actions)
     % Selección epsilon-greedy de acciones
     % Con probabilidad (1-epsilon): acción greedy (máximo Q)
     % Con probabilidad epsilon: acción aleatoria uniforme
