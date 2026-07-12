@@ -9,18 +9,19 @@ start_position = [1 2];
 [m, n] = size(M);
 num_actions = length(actions);
 
-gamma = 0.99;
-epsilon = 1;
-decay = 0.99;
+alpha = 0.1;        % Tasa de aprendizaje constante
+gamma = 0.99;       % Factor de descuento
+epsilon = 1;        % Parámetro de exploración inicial
+decay = 0.99;       % Decaimiento de epsilon
 num_episodes = 1000;
 max_steps = 1e4;
 
-% Inicialización: política ε-soft uniforme y tablas Q y N
+% Inicialización: política ε-soft uniforme y tabla Q
 policy = ones(m, n, num_actions) / num_actions;  % Política estocástica uniforme
 Q = zeros(m, n, num_actions);                 % Función de acción-valor
-N = zeros(m, n, num_actions);                 % Contador de visitas
 
-% Algoritmo Monte Carlo On-Policy con política ε-greedy
+% Algoritmo Monte Carlo On-Policy con α constante y política ε-greedy
+% Diferencia con control_on_policy.m: usa tasa de aprendizaje α en lugar de 1/N
 for episode = 1 : num_episodes
     epsilon = max(0.1, decay * epsilon);
 
@@ -41,10 +42,11 @@ for episode = 1 : num_episodes
         if ~visited(index)
             visited(index) = true;
             
-            % Actualización incremental de Q (media muestral)
-            N(index) = N(index) + 1;
-            Q(index) = Q(index) + (1 / N(index)) * (G - Q(index));
-            
+            % Actualización de Q con tasa de aprendizaje constante α
+            % Q(s,a) = Q(s,a) + α * [G - Q(s,a)]
+            % Esta versión da más peso a retornos recientes (útil para problemas no estacionarios)
+            Q(index) = Q(index) + alpha * (G - Q(index));
+
             % Mejora de política: extraer acción greedy
             q_s = squeeze(Q(states(t, 1), states(t, 2), :));
             max_value = max(q_s);
