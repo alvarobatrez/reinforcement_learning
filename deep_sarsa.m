@@ -211,10 +211,10 @@ function grad = compute_loss_gradients(model, batch_size, state, target, action)
     q_target_full(indices) = target;
     
     % Gradiente del error cuadrático medio respecto a la salida
-    % d(Loss)/d(Q) = 2 * (Q_pred - Q_target) / batch_size
+    % delta = (Q_pred - Q_target)
     % Para acciones no tomadas: gradiente = 0 (porque Q_pred = Q_target)
-    % Para acciones tomadas: gradiente = 2 * (Q_pred - target) / batch_size
-    delta{end} = 2 * (q_pred - q_target_full) / batch_size;
+    % Para acciones tomadas: gradiente = (Q_pred - target)
+    delta{end} = (q_pred - q_target_full);
 
     % Retropropagación del error a capas anteriores
     for i = model.num_layers - 1 : -1 : 1

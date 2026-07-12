@@ -193,7 +193,9 @@ classdef NeuralNetwork
         function model = update_weights(model, grad)
             % Actualiza los pesos usando el optimizador configurado
             % grad: cell array con gradientes para cada capa
-            
+
+            model.t = model.t + 1;  % Contador de iteraciones para corrección de sesgo de Adam
+
             for i = 1 : model.num_layers
                 if strcmp(model.optimizer, 'sgd')
                     model = sgd(model, grad, i);
@@ -237,7 +239,6 @@ classdef NeuralNetwork
 
                 % Backward pass y actualización
                 grad = compute_gradients(model, batch_size, outputs, Y);
-                model.t = model.t + 1;  % Contador de iteraciones para corrección de sesgo de Adam
                 model = update_weights(model, grad);
                 
                 history(epoch) = loss;
