@@ -74,8 +74,6 @@ draw_response(policy, actions, initial_conditions, range_v, range_w, v_min, v_ma
 figure, plot(1:num_episodes, sum_returns)
 xlabel('Episodio'), ylabel('Retornos'), title('SARSA con Agregación de Estados')
 
-t = (0 : t_steps-1) * Ts;
-
 function state = discretize_state(observations, range_v, range_w)
     v = observations(1);
     w = observations(2);
