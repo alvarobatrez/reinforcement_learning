@@ -9,8 +9,8 @@ Y = [1; 0; 0; 1];          % Salidas esperadas (XNOR)
 [~, num_outputs] = size(Y); % num_outputs = 1
 
 % Hiperparámetros
-learning_rate = 0.1;
-epochs = 3000;
+learning_rate = 0.01;
+epochs = 30000;
 
 % Arquitectura de la red: [10 10 1]
 % Capa 1: 10 neuronas ocultas

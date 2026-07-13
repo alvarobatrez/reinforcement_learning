@@ -4,23 +4,28 @@ X = [0 0; 0 1; 1 0; 1 1];
 Y = [1; 0; 0; 1];
 
 [~, num_inputs] = size(X);
-
-learning_rate = 0.001;
-optimizer = 'adam';
+ 
+learning_rate = 0.01;
+optimizer = 'sgdm';
 loss_function = 'mse';
 epochs = 1000;
 
-layers = {{10, 'relu'} {10, 'relu'} {1, 'sigmoid'}};
+layers = [
+    featureInputLayer(num_inputs)
+    fullyConnectedLayer(10)
+    reluLayer
+    fullyConnectedLayer(10)
+    reluLayer
+    fullyConnectedLayer(1)
+    sigmoidLayer
+    ];
 
-model = NeuralNetwork(num_inputs, layers);
-model = model.compile(learning_rate, optimizer, loss_function);
-[model, history] = model.train(X, Y, epochs);
-y_pred = model.predict(X);
+net = dlnetwork(layers);
+options = trainingOptions(optimizer, MaxEpochs=epochs, InitialLearnRate=learning_rate, Plots='training-progress');
+net = trainnet(X, Y, net, loss_function, options);
+y_pred = net.predict(X);
 
 disp('Resultados')
 for i = 1 : 4
     fprintf('Entrada: [%d %d], Salida: %.2f\n',X(i,1), X(i,2), y_pred(i))  
 end
-
-plot(1:epochs, history), title('Función Costo'), grid on
-xlabel('Épocas'), ylabel('Error (MSE)')
