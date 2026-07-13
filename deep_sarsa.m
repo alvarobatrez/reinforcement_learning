@@ -21,12 +21,12 @@ num_actions = length(actions);
 tau = 0.005;              % Factor de actualización suave del target network (soft update)
 gamma = 0.99;             % Factor de descuento
 epsilon = 1;              % Parámetro de exploración inicial (epsilon-greedy)
-decay = 0.99;            % Decaimiento de epsilon por episodio
+decay = 0.995;            % Decaimiento de epsilon por episodio
 num_episodes = 1500;
 max_steps = 1e4;        % Límite de pasos por episodio (evita ciclos infinitos)
 
 % Parámetros del Experience Replay (Replay de Experiencias)
-buffer_capacity = 1e4;    % Capacidad máxima del buffer
+buffer_capacity = 1e5;    % Capacidad máxima del buffer
 batch_size = 32;         % Tamaño del batch para entrenamiento
 buffer = ExperienceReplay(buffer_capacity);
 
@@ -253,6 +253,6 @@ function model_target = update_target_network(model, model_target, tau)
     
     for i = 1 : model.num_layers
         model_target.layers{i}.weights = tau * model.layers{i}.weights + ...
-                                         (1 - tau) * model_target.layers{i}.weights;
+            (1 - tau) * model_target.layers{i}.weights;
     end
 end
