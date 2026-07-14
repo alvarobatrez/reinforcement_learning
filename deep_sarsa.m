@@ -8,11 +8,14 @@ close all; clear; clc
 % Q(S,A) <- Q(S,A) + alpha * [R + gamma * Q(S',A') - Q(S,A)]
 % donde A' se selecciona usando la misma política (epsilon-greedy)
 
-M = create_maze();
+M = create_medium_maze();
 actions = [-1 0; 0 1; 1 0; 0 -1];  % [arriba, derecha, abajo, izquierda]
 
 start_position = [1 2];
 [goal_row, goal_col] = find(M==10);
+
+% Reward shapping (opcional)
+% phi = @(pos) -(abs(pos(1) - goal_row) + abs(pos(2) - goal_col));
 
 [m, n] = size(M);
 num_actions = length(actions);
@@ -74,6 +77,10 @@ for episode = 1 : num_episodes
         
         % Ejecutar acción en el entorno
         [next_state, reward, done] = step(M, state, action, actions, m, n);
+
+        % Reward shapping (opcional)
+        % F = gamma * phi(next_state) - phi(state);
+        % reward = reward + F;
         
         % Almacenar transición en el buffer de experiencias
         % Transición: (S, A, R, done, S')
@@ -117,7 +124,7 @@ for episode = 1 : num_episodes
 
     total_loss(episode) = loss;
     total_returns(episode) = G;
-    fprintf('Episodio: %d, Pasos: %d, Retorno: %d, Pérdida: %.2f\n', episode, steps, G, loss)
+    fprintf('Episodio: %d, Pasos: %d, Retorno: %.1f, Pérdida: %.3f\n', episode, steps, G, loss)
 end
 
 % Guardar modelo entrenado

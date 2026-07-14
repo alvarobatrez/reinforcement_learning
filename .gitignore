@@ -1,0 +1,147 @@
+# =============================================================================
+# .gitignore para MATLAB / Simulink
+# General para cualquier proyecto MATLAB/Simulink
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# MATLAB - Archivos temporales y auto-guardados
+# ---------------------------------------------------------------------------
+*.asv            # Auto-save (creado al cerrar sin guardar)
+*.m~             # Respaldo de scripts .m
+*.mex*           # Binarios MEX compilados (multiplataforma)
+*.mexa64
+*.mexa32
+*.mexw64
+*.mexw32
+*.mexglx
+*.mexmaci64
+*.mexmexa64
+*.mexrs6
+*.mexsgi
+*.mexsol
+
+# ---------------------------------------------------------------------------
+# Datos y espacios de trabajo
+# ---------------------------------------------------------------------------
+*.mat            # Variables y espacios de trabajo guardados
+
+# ---------------------------------------------------------------------------
+# Figuras, gráficos y exportaciones
+# ---------------------------------------------------------------------------
+*.fig            # Ventanas de figuras de MATLAB
+*.m~             # Respaldo de scripts
+*.mlexeps        # Exportaciones temporales de Live Editor
+
+# --- Exportaciones de gráficos (descomentar si no se quieren versionar) ---
+# *.png
+# *.jpg
+# *.jpeg
+# *.svg
+# *.eps
+# *.pdf
+# *.bmp
+# *.tif
+# *.tiff
+
+# ---------------------------------------------------------------------------
+# Live Scripts / Live Editor
+# ---------------------------------------------------------------------------
+*.mlx~
+*.m~*
+
+# ---------------------------------------------------------------------------
+# Simulink / Stateflow
+# ---------------------------------------------------------------------------
+*.slx            # Modelos de Simulink (binario)
+*.slxc           # Cache de Simulink (no versionar, se regenera)
+.slxc/
+*.mdl            # Modelos antiguos de Simulink (formato legado)
+*.slx.r*         # Respaldo de versiones de Simulink (ej: model.slx.r2018b)
+
+# --- Stateflow ---
+*.sfx            # Chart de Stateflow
+*.sldd           # Dictionary de datos de Simulink (descomentar para ignorar)
+
+# ---------------------------------------------------------------------------
+# Toolboxes específicos - Generados y compilados
+# ---------------------------------------------------------------------------
+# --- Deep Learning Toolbox ---
+*.mat.model      # Modelos entrenados (Deep Learning Toolbox)
+onnx\*           # Exportaciones ONNX
+*.onnx
+
+# --- Reinforcement Learning Toolbox ---
+*.mat.agent      # Agentes entrenados de RL Toolbox
+
+# --- Simscape / Physical Modeling ---
+*.ssc            # Archivos Simscape (descomentar si son generados)
+ssc_fmu_*
+
+# --- HDL Coder / FPGA ---
+hdlsrc/
+*.vhd
+*.v
+
+# --- C/C++ Coder ---
+codegen/
+*.c.gir
+*.dll
+*.so
+*.dylib
+
+# ---------------------------------------------------------------------------
+# Reportes, publish y exportaciones
+# ---------------------------------------------------------------------------
+*.mhtml          # Exportación HTML de celdas
+*.m~*.html
+*.rtf            # Exportaciones RTF
+*.docx           # Exportaciones Word
+*.pptx           # Exportaciones PowerPoint
+*.slx.rpt        # Reportes de Simulink Reporter
+html/            # Salida de publish
+slprj/           # Proyecto de Simulink (derivado, se regenera)
+
+# ---------------------------------------------------------------------------
+# Proyectos MATLAB y control de versiones interno
+# ---------------------------------------------------------------------------
+*.prj            # Archivo de proyecto MATLAB (.descomentar si es generado)
+sccprj/          # Cache de control de versiones interno de MATLAB
+
+# ---------------------------------------------------------------------------
+# Sesiones y logs
+# ---------------------------------------------------------------------------
+*.log            # Logs de MATLAB
+*.out            # Salidas redirigidas
+MATLAB.exe.stackdump
+*.mat.exe        # Ejecutables generados (MATLAB Compiler)
+*.ctf            # Component Technology File (MATLAB Compiler)
+
+# ---------------------------------------------------------------------------
+# Archivos de sistema operativo
+# ---------------------------------------------------------------------------
+.DS_Store        # macOS
+Thumbs.db        # Windows
+thumbs.db
+desktop.ini      # Windows
+ehthumbs.db
+$RECYCLE.BIN/    # Windows Papelera
+
+# ---------------------------------------------------------------------------
+# Editores e IDEs
+# ---------------------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-workspace
+*.sublime-project
+
+# ---------------------------------------------------------------------------
+# Entornos virtuales y dependencias (Python para MATLAB Python Interface)
+# ---------------------------------------------------------------------------
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
