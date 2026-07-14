@@ -18,12 +18,12 @@ start_position = [1 2];
 num_actions = length(actions);
 
 % Hiperparámetros
-tau = 0.01;              % Factor de actualización suave del target network (soft update)
+tau = 0.005;              % Factor de actualización suave del target network (soft update)
 gamma = 0.99;             % Factor de descuento
 epsilon = 1;              % Parámetro de exploración inicial (epsilon-greedy)
-decay = 0.99;            % Decaimiento de epsilon por episodio
+decay = 0.995;            % Decaimiento de epsilon por episodio
 num_episodes = 3000;
-max_steps = 5e3;        % Límite de pasos por episodio (evita ciclos infinitos)
+max_steps = 1e4;        % Límite de pasos por episodio (evita ciclos infinitos)
 
 % Parámetros del Experience Replay (Replay de Experiencias)
 buffer_capacity = 1e5;    % Capacidad máxima del buffer
@@ -34,9 +34,9 @@ buffer = ExperienceReplay(buffer_capacity);
 % Entrada: posición (fila, columna) -> Estado 2D
 % Salida: valor Q para cada una de las 4 acciones
 num_inputs = 2;
-layers = {{64, 'relu'} {32, 'relu'} {num_actions, 'linear'}};  % Capa de salida lineal (Q-values)
+layers = {{64, 'relu'} {32, 'relu'} {16, 'relu'} {num_actions, 'linear'}};  % Capa de salida lineal (Q-values)
 
-learning_rate = 0.001;
+learning_rate = 0.0001;
 optimizer = 'adamW';
 loss_function = 'mse';
 
@@ -65,16 +65,19 @@ for episode = 1 : num_episodes
     
     while ~isequal(state, [goal_row goal_col]) && steps < max_steps
         steps = steps + 1;
-        
+
+        % Normalizar estado para la red neuronal
+        state_norm = normalize_state(state, m, n);
+
         % Seleccionar acción usando política epsilon-greedy
-        action = epsilon_greedy_action(epsilon, q_network, state, num_actions);
+        action = epsilon_greedy_action(epsilon, q_network, state_norm, num_actions);
         
         % Ejecutar acción en el entorno
         [next_state, reward, done] = step(M, state, action, actions, m, n);
         
         % Recompensa shaping: refuerzo positivo al llegar a la meta
         if reward == 10
-            reward = 100;
+            reward = 10;
         end
         
         % Almacenar transición en el buffer de experiencias
@@ -85,7 +88,7 @@ for episode = 1 : num_episodes
         if buffer.can_sample(batch_size)
             % Muestrear batch aleatorio del buffer
             sample = buffer.sample(batch_size);
-            [state_b, action_b, reward_b, done_b, next_state_b] = split_sample(sample);
+            [state_b, action_b, reward_b, done_b, next_state_b] = split_sample(sample, m, n);
             
             % SARSA: Seleccionar A' usando la misma política (on-policy)
             % Nota: Usamos q_network (política actual) para seleccionar la acción
@@ -163,16 +166,17 @@ function action = epsilon_greedy_action(epsilon, model, state, num_actions)
     end
 end
 
-function [state_b, action_b, reward_b, done_b, next_state_b] = split_sample(sample)
+function [state_b, action_b, reward_b, done_b, next_state_b] = split_sample(sample, m, n)
     % Divide el batch de experiencias en sus componentes
     % Formato del buffer: [state(2), action(1), reward(1), done(1), next_state(2)]
     % Total: 7 columnas
-    
-    state_b = sample(:, 1:2);      % Posición actual (fila, columna)
+    % Normaliza los estados al extraerlos del buffer (rango [0, 1])
+
+    state_b = normalize_state(sample(:, 1:2), m, n);      % Posición actual normalizada
     action_b = sample(:, 3);        % Acción tomada (1-4)
     reward_b = sample(:, 4);        % Recompensa recibida
     done_b = sample(:, 5);          % Flag de estado terminal (0 o 1)
-    next_state_b = sample(:, 6:7);  % Posición siguiente (fila, columna)
+    next_state_b = normalize_state(sample(:, 6:7), m, n);  % Posición siguiente normalizada
 end
 
 function q = gather_q(model, state, action, batch_size)
