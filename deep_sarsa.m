@@ -18,25 +18,25 @@ start_position = [1 2];
 num_actions = length(actions);
 
 % Hiperparámetros
-tau = 0.005;              % Factor de actualización suave del target network (soft update)
+tau = 0.01;              % Factor de actualización suave del target network (soft update)
 gamma = 0.99;             % Factor de descuento
 epsilon = 1;              % Parámetro de exploración inicial (epsilon-greedy)
-decay = 0.995;            % Decaimiento de epsilon por episodio
-num_episodes = 1500;
-max_steps = inf;        % Límite de pasos por episodio (evita ciclos infinitos)
+decay = 0.99;            % Decaimiento de epsilon por episodio
+num_episodes = 3000;
+max_steps = 5e3;        % Límite de pasos por episodio (evita ciclos infinitos)
 
 % Parámetros del Experience Replay (Replay de Experiencias)
 buffer_capacity = 1e5;    % Capacidad máxima del buffer
-batch_size = 32;         % Tamaño del batch para entrenamiento
+batch_size = 128;         % Tamaño del batch para entrenamiento
 buffer = ExperienceReplay(buffer_capacity);
 
 % Arquitectura de la red neuronal Q
 % Entrada: posición (fila, columna) -> Estado 2D
 % Salida: valor Q para cada una de las 4 acciones
 num_inputs = 2;
-layers = {{32, 'relu'} {16, 'relu'} {num_actions, 'linear'}};  % Capa de salida lineal (Q-values)
+layers = {{64, 'relu'} {32, 'relu'} {num_actions, 'linear'}};  % Capa de salida lineal (Q-values)
 
-learning_rate = 0.0001;
+learning_rate = 0.001;
 optimizer = 'adamW';
 loss_function = 'mse';
 
@@ -104,6 +104,10 @@ for episode = 1 : num_episodes
             % Backpropagation: actualizar Q-network para minimizar (target - Q)^2
             q_network = backpropagation(q_network, batch_size, state_b, target_b, action_b);
 
+            % Soft update del target network una vez por episodio (copia suave de pesos)
+            % theta_target = tau * theta_q + (1-tau) * theta_target
+            target_network = update_target_network(q_network, target_network, tau);
+
             % Actualizar métricas de pérdida (media móvil exponencial)
             n_updates = n_updates + 1;
             mse_error = mean((target_b - current_q_b).^2);
@@ -113,10 +117,6 @@ for episode = 1 : num_episodes
         state = next_state;
         G = G + reward;
     end
-
-    % Soft update del target network una vez por episodio (copia suave de pesos)
-    % theta_target = tau * theta_q + (1-tau) * theta_target
-    target_network = update_target_network(q_network, target_network, tau);
 
     total_loss(episode) = loss;
     total_returns(episode) = G;
