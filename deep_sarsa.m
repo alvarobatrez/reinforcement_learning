@@ -14,9 +14,6 @@ actions = [-1 0; 0 1; 1 0; 0 -1];  % [arriba, derecha, abajo, izquierda]
 start_position = [1 2];
 [goal_row, goal_col] = find(M==10);
 
-% Reward shapping (opcional)
-% phi = @(pos) -(abs(pos(1) - goal_row) + abs(pos(2) - goal_col));
-
 [m, n] = size(M);
 num_actions = length(actions);
 
@@ -78,10 +75,6 @@ for episode = 1 : num_episodes
         % Ejecutar acción en el entorno
         [next_state, reward, done] = step(M, state, action, actions, m, n);
 
-        % Reward shapping (opcional)
-        % F = gamma * phi(next_state) - phi(state);
-        % reward = reward + F;
-        
         % Almacenar transición en el buffer de experiencias
         % Transición: (S, A, R, done, S')
         buffer = buffer.insert([state, action, reward, done, next_state]);

@@ -19,23 +19,22 @@ start_position = [1 2];
 num_actions = length(actions);
 
 % Hiperparámetros
-tau = 0.005;              % Factor de soft update (polyak averaging)
 gamma = 0.99;             % Factor de descuento
 epsilon = 1;              % Exploración inicial
-decay = 0.995;            % Decaimiento de epsilon
-num_episodes = 1500;      
-max_steps = inf;         % Límite de pasos por episodio
+decay = 0.99;            % Decaimiento de epsilon
+num_episodes = 1000;
+max_steps = 5e3;         % Límite de pasos por episodio
 
 % Experience Replay
 buffer_capacity = 1e5;  % Capacidad del buffer
-batch_size = 32;         % Tamaño del batch
+batch_size = 128;         % Tamaño del batch
 buffer = ExperienceReplay(buffer_capacity);
 
 % Arquitectura de la red Q
 num_inputs = 2;           % Estado: (fila, columna)
-layers = {{32, 'relu'} {16, 'relu'} {num_actions, 'linear'}};
+layers = {{128, 'relu'} {64, 'relu'} {num_actions, 'linear'}};
 
-learning_rate = 0.0001;
+learning_rate = 0.001;
 optimizer = 'adamW';
 loss_function = 'mse';
 
@@ -47,8 +46,9 @@ target_network = NeuralNetwork(num_inputs, layers);
 target_network = target_network.compile(learning_rate, optimizer, loss_function);
 target_network = copy_weights(q_network, target_network);
 
-% Contadores para control de actualización del target
-target_update_freq = 10;  % Actualizar target cada 100 pasos de entrenamiento
+% Frecuencia de actualización del target network (hard update, estilo DQN canónico)
+% Cada C pasos de entrenamiento se copian los pesos del Q-network al target.
+target_update_freq = 1000;
 training_step = 0;         % Contador de pasos de entrenamiento
 
 % Historiales
@@ -66,25 +66,23 @@ for episode = 1 : num_episodes
     
     while ~isequal(state, [goal_row goal_col]) && steps < max_steps
         steps = steps + 1;
-        
+
+        % Normalizar estado para la red neuronal
+        state_norm = normalize_state(state, m, n);
+
         % Seleccionar acción epsilon-greedy
-        action = egreedy_action(epsilon, q_network, state, num_actions);
+        action = epsilon_greedy_action(epsilon, q_network, state_norm, num_actions);
         
         % Ejecutar acción
         [next_state, reward, done] = step(M, state, action, actions, m, n);
-        
-        % Recompensa shaping
-        if reward == 10
-            reward = 100;
-        end
-        
+
         % Almacenar transición
         buffer = buffer.insert([state, action, reward, done, next_state]);
         
         % Entrenar si hay suficientes datos
         if buffer.can_sample(batch_size)
             sample = buffer.sample(batch_size);
-            [state_b, action_b, reward_b, done_b, next_state_b] = split_sample(sample);
+            [state_b, action_b, reward_b, done_b, next_state_b] = split_sample(sample, m, n);
             
             % DQN: Calcular target usando max Q(s', a')
             % next_q_values: (batch_size x num_actions)
@@ -103,10 +101,10 @@ for episode = 1 : num_episodes
             % Backpropagation
             q_network = backpropagation(q_network, batch_size, state_b, target_b, action_b);
             
-            % Actualizar target network cada target_update_freq pasos
+            % Actualizar target network (hard update) cada target_update_freq pasos
             training_step = training_step + 1;
             if mod(training_step, target_update_freq) == 0
-                target_network = update_target_network(q_network, target_network, tau);
+                target_network = copy_weights(q_network, target_network);
             end
             
             % Calcular pérdida (MSE)
@@ -121,8 +119,7 @@ for episode = 1 : num_episodes
     
     total_loss(episode) = loss;
     total_returns(episode) = G;
-    fprintf('Episodio: %d, Pasos: %d, Retorno: %d, Pérdida: %.2f\n', ...
-        episode, steps, G, loss)
+    fprintf('Episodio: %d, Pasos: %d, Retorno: %.1f, Pérdida: %.2f\n', episode, steps, G, loss)
 end
 
 % Guardar modelo
@@ -149,7 +146,7 @@ function model_copy = copy_weights(model_original, model_copy)
     end
 end
 
-function action = egreedy_action(epsilon, model, state, num_actions)
+function action = epsilon_greedy_action(epsilon, model, state, num_actions)
     % Selección epsilon-greedy
     if rand > epsilon
         [~, action] = max(model.predict(state), [], 2);
@@ -159,13 +156,17 @@ function action = egreedy_action(epsilon, model, state, num_actions)
     end
 end
 
-function [state_b, action_b, reward_b, done_b, next_state_b] = split_sample(sample)
+function [state_b, action_b, reward_b, done_b, next_state_b] = split_sample(sample, m, n)
     % Dividir batch en componentes
-    state_b = sample(:, 1:2);
+    % Formato del buffer: [state(2), action(1), reward(1), done(1), next_state(2)]
+    % Total: 7 columnas
+    % Normaliza los estados al extraerlos del buffer (rango [0, 1])
+
+    state_b = normalize_state(sample(:, 1:2), m, n);      % Posición actual normalizada
     action_b = sample(:, 3);
     reward_b = sample(:, 4);
     done_b = sample(:, 5);
-    next_state_b = sample(:, 6:7);
+    next_state_b = normalize_state(sample(:, 6:7), m, n);  % Posición siguiente normalizada
 end
 
 function q = gather_q(model, state, action, batch_size)
@@ -194,10 +195,10 @@ function grad = compute_loss_gradients(model, batch_size, state, target, action)
     indices = sub2ind(size(q_pred), (1:batch_size)', action);
     q_target_full(indices) = target;
     
-    % Gradiente del MSE: dL/dQ = 2*(Q_pred - Q_target) / batch_size
-    % Para acciones no tomadas: gradiente = 0 (Q_pred = Q_target)
-    % Para acciones tomadas: gradiente = 2*(Q_pred - target) / batch_size
-    delta{end} = 2 * (q_pred - q_target_full) / batch_size;
+            % Gradiente del MSE: dL/dQ = (Q_pred - Q_target)
+            % Para acciones no tomadas: gradiente = 0 (Q_pred = Q_target)
+            % Para acciones tomadas: gradiente = (Q_pred - target)
+            delta{end} = (q_pred - q_target_full);
 
     % Backpropagation
     for i = model.num_layers - 1 : -1 : 1
@@ -219,13 +220,4 @@ function model = backpropagation(model, batch_size, state, target, action)
     % Actualizar pesos
     grad = compute_loss_gradients(model, batch_size, state, target, action);
     model = model.update_weights(grad);
-end
-
-function model_target = update_target_network(model, model_target, tau)
-    % Soft update (Polyak averaging)
-    % theta_target = tau * theta + (1 - tau) * theta_target
-    for i = 1 : model.num_layers
-        model_target.layers{i}.weights = tau * model.layers{i}.weights + ...
-                                         (1 - tau) * model_target.layers{i}.weights;
-    end
 end
