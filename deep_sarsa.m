@@ -8,7 +8,7 @@ close all; clear; clc
 % Q(S,A) <- Q(S,A) + alpha * [R + gamma * Q(S',A') - Q(S,A)]
 % donde A' se selecciona usando la misma política (epsilon-greedy)
 
-M = create_medium_maze();
+M = create_maze();
 actions = [-1 0; 0 1; 1 0; 0 -1];  % [arriba, derecha, abajo, izquierda]
 
 start_position = [1 2];
@@ -102,15 +102,14 @@ for episode = 1 : num_episodes
             % Backpropagation: actualizar Q-network para minimizar (target - Q)^2
             q_network = backpropagation(q_network, batch_size, state_b, target_b, action_b);
 
+            % theta_target = tau * theta_q + (1-tau) * theta_target
+            target_network = update_target_network(q_network, target_network, tau);
+
             % Actualizar métricas de pérdida (media móvil exponencial)
             n_updates = n_updates + 1;
             mse_error = mean((target_b - current_q_b).^2);
             loss = loss + (1 / n_updates) * (mse_error - loss);
         end
-
-        % Soft update del target network una vez por episodio (copia suave de pesos)
-        % theta_target = tau * theta_q + (1-tau) * theta_target
-        target_network = update_target_network(q_network, target_network, tau);
 
         state = next_state;
         G = G + reward;
