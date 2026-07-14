@@ -23,7 +23,7 @@ gamma = 0.99;             % Factor de descuento
 epsilon = 1;              % Parámetro de exploración inicial (epsilon-greedy)
 decay = 0.99;            % Decaimiento de epsilon por episodio
 num_episodes = 1000;
-max_steps = 5e3;        % Límite de pasos por episodio (evita ciclos infinitos)
+max_steps = 1e4;        % Límite de pasos por episodio (evita ciclos infinitos)
 
 % Parámetros del Experience Replay (Replay de Experiencias)
 buffer_capacity = 1e5;    % Capacidad máxima del buffer
@@ -74,6 +74,11 @@ for episode = 1 : num_episodes
         
         % Ejecutar acción en el entorno
         [next_state, reward, done] = step(M, state, action, actions, m, n);
+        
+        % Recompensa shaping: refuerzo positivo al llegar a la meta
+        if reward == 10
+            reward = 10;
+        end
         
         % Almacenar transición en el buffer de experiencias
         % Transición: (S, A, R, done, S')
