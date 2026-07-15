@@ -117,7 +117,7 @@ for episode = 1 : num_episodes
 
     total_loss(episode) = loss;
     total_returns(episode) = G;
-    fprintf('Episodio: %d, Pasos: %d, Retorno: %.1f, Pérdida: %.3f\n', episode, steps, G, loss)
+    fprintf('Episodio: %d, Pasos: %d, Retorno: %d, Pérdida: %.3f\n', episode, steps, G, loss)
 end
 
 % Guardar modelo entrenado
