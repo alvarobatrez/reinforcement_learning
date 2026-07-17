@@ -3,7 +3,7 @@ close all; clear, clc
 M = 5;
 m = 1;
 l = 2;
-b = 1;
+b = 0.1;
 d = 0.1;
 g = -9.81;
 

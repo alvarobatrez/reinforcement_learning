@@ -34,7 +34,7 @@ buffer = ExperienceReplay(buffer_capacity);
 % Entrada: posición (fila, columna) -> Estado 2D
 % Salida: valor Q para cada una de las 4 acciones
 num_inputs = 2;
-layers = {{64, 'relu'} {32, 'relu'} {num_actions, 'linear'}};  % Capa de salida lineal (Q-values)
+layers = {{128, 'relu'} {64, 'relu'} {num_actions, 'linear'}};  % Capa de salida lineal (Q-values)
 
 learning_rate = 0.001;
 optimizer = 'adamW';

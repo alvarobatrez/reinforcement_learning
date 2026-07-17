@@ -9,7 +9,7 @@ close all; clear; clc
 % Q(S,A) <- Q(S,A) + alpha * [R + gamma * max_a' Q(S',a') - Q(S,A)]
 % donde max_a' se calcula sobre todas las acciones posibles (política greedy)
 
-M = create_maze();
+M = create_medium_maze();
 actions = [-1 0; 0 1; 1 0; 0 -1];  % [arriba, derecha, abajo, izquierda]
 
 start_position = [1 2];
