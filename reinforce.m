@@ -9,7 +9,6 @@ start_position = [1 2];
 [m, n] = size(M);
 num_actions = length(actions);
 
-alpha = 0.0001;
 beta = 0.01;
 gamma = 0.99;
 num_episodes = 10;
@@ -53,6 +52,8 @@ for episode = 1 : num_episodes
     grad = {};
 
     for env = 1 : num_envs
+        total_returns(episode) = total_returns(episode) + sum(rewards{env});
+
         for t = size(states{env}, 1) : -1 : 1
             G{env} = rewards{env}(t) + gamma * G{env};
             
@@ -62,13 +63,14 @@ for episode = 1 : num_episodes
             action_log_probabilities = gather_log_probs(log_probabilities, actions_taken{env}(t));
 
             H = -sum(probabilities .* log_probabilities);
-            loss = loss + ((-gamma^t * action_log_probabilities * G{env}) - beta * H);
+            loss = loss + ((-gamma^(t-1) * action_log_probabilities * G{env}) - beta * H);
 
-            grad = backpropagation(policy, grad, states_norm, actions_taken{env}(t), gamma^t * G{env}, beta);
+            grad = backpropagation(policy, grad, states_norm, actions_taken{env}(t), gamma^(t-1) * G{env}, beta);
         end
     end
 
     loss = loss / num_envs;
+    total_returns(episode) = total_returns(episode) / num_envs;
 
     for i = 1 : policy.num_layers
         grad{i} = grad{i} / num_envs;
@@ -76,27 +78,13 @@ for episode = 1 : num_episodes
 
     policy = policy.update_weights(grad);
 
-    g = mean(cell2mat(G));
-    steps = 0;
-    for i = 1 : num_envs
-        steps = steps + length(states{i});
-    end
-    steps = round(steps / num_envs, 0);
     total_loss(episode) = loss;
-    total_returns(episode) = g;
 
-    fprintf('Episodio: %d, Pasos: %.2f, Retorno: %.2f, Pérdida: %.2f\n', episode, steps, g, loss)
+    fprintf('Episodio: %d, Retorno: %.2f, Pérdida: %.2f\n', episode, total_returns(episode), loss)
 end
 
 optimal_path = create_path(policy, M, num_actions);
 
-% Visualizar resultados
-subplot(2,1,1), semilogy(1:num_episodes, total_returns), grid on
-title('Retornos REINFORCE'), xlabel('Épocas'), ylabel('Retorno Promedio')
-subplot(2,1,2), semilogy(1:num_episodes, total_loss), grid on
-title('Pérdida REINFORCE'), xlabel('Épocas'), ylabel('Pérdida Promedio')
-
-% Simular trayectoria óptima
 draw_maze(M, start_position, optimal_path, [goal_row goal_col])
 
 function y = gather_log_probs(log_probs, actions)
