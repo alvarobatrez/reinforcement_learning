@@ -1,7 +1,7 @@
 close all; clear; clc
 
 % Carga del laberinto y definición de acciones: arriba, derecha, abajo, izquierda
-M = create_small_maze();
+M = create_maze();
 actions = [-1 0; 0 1; 1 0; 0 -1];
 
 start_position = [1 2];
