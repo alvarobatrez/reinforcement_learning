@@ -1,4 +1,4 @@
-function [grad, loss, G0] = episode_gradient(model, states, actions_taken, rewards, gamma, beta, m, n, baseline)
+function [grad, loss, G0, H] = episode_gradient(model, states, actions_taken, rewards, gamma, beta, m, n, baseline)
     T = size(states, 1);
 
     G = zeros(T, 1);
@@ -37,4 +37,6 @@ function [grad, loss, G0] = episode_gradient(model, states, actions_taken, rewar
     for i = 1 : model.num_layers
         grad{i} = delta{i}' * [ones(T, 1), outputs{i}];
     end
+
+    H = mean(H);
 end
