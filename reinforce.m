@@ -6,9 +6,9 @@ start_position = [1 2];
 [m, n] = size(M);
 num_actions = length(actions);
 beta = 0.1;
-decay = 0.99;
+decay = 0.995;
 gamma = 0.999;
-num_episodes = 10000;
+num_episodes = 20000;
 max_steps = 5e3;
 num_envs = feature('numcores');
 p = gcp('nocreate');
@@ -29,7 +29,7 @@ total_returns = zeros(num_episodes, 1);
 total_h = zeros(num_episodes, 1);
 baseline = 0;
 for episode = 1 : num_episodes
-    beta = max(0.001, decay * beta);
+    beta = max(0.01, decay * beta);
     grads = cell(1, num_envs);
     losses = zeros(1, num_envs);
     returns = zeros(1, num_envs);
@@ -61,17 +61,7 @@ for episode = 1 : num_episodes
     total_returns(episode) = mean(returns);
     total_h(episode) = mean(H);
     fprintf('Episodio: %d, Pasos: %.1f, Retorno: %.1f, Pérdida: %.1f, Entropía: %.4f\n', episode, mean(steps), total_returns(episode), total_loss(episode), total_h(episode))
-    if mod(episode, 10) == 0
-        subplot(3,1,1), plot(1:episode, total_returns(1:episode)), grid on
-        title('Retornos'), xlabel('Épocas'), ylabel('Retorno')
-        subplot(3,1,2), plot(1:episode, total_loss(1:episode)), grid on
-        title('Pérdida'), xlabel('Épocas'), ylabel('Error')
-        subplot(3,1,3), plot(1:episode, total_h(1:episode)), grid on
-        title('Entropía'), xlabel('Épocas'), ylabel('Entropía')
-        pause(0.01)
-    end
 end
-close all
 optimal_path = create_path(policy, M);
 subplot(3,1,1), plot(1:num_episodes, total_returns), grid on
 title('Retornos'), xlabel('Épocas'), ylabel('Retorno')
