@@ -5,8 +5,9 @@ start_position = [1 2];
 [goal_row, goal_col] = find(M==10);
 [m, n] = size(M);
 num_actions = length(actions);
-gamma = 0.99;
+gamma = 0.999;
 epsilon = 1;
+min_epsilon = 0.01;
 decay = 0.99;
 num_episodes = 1000;
 max_steps = 5e4;
@@ -25,10 +26,11 @@ target_network = target_network.compile(learning_rate, optimizer, loss_function)
 target_network = copy_weights(q_network, target_network);
 target_update_freq = 1000;
 training_step = 0;
+total_steps = zeros(num_episodes, 1);
 total_loss = zeros(num_episodes, 1);
 total_returns = zeros(num_episodes, 1);
 for episode = 1 : num_episodes
-    epsilon = max(0.01, decay * epsilon);
+    epsilon = max(min_epsilon, decay * epsilon);
     state = start_position;
     steps = 0;
     loss = 0;
@@ -59,15 +61,18 @@ for episode = 1 : num_episodes
         state = next_state;
         G = G + reward;
     end
+    total_steps(episode) = steps;
     total_loss(episode) = loss;
     total_returns(episode) = G;
     fprintf('Episodio: %d, Pasos: %d, Retorno: %d, Pérdida: %.3f\n', episode, steps, G, loss)
 end
 policy = create_policy(q_network, M);
-subplot(2,1,1), plot(1:num_episodes, total_returns), grid on
-title('Retornos DQN'), xlabel('Épocas'), ylabel('Retorno')
-subplot(2,1,2), plot(1:num_episodes, total_loss), grid on
-title('Pérdida DQN'), xlabel('Épocas'), ylabel('Error MSE')
+subplot(3,1,1), semilogy(1:num_episodes, total_steps), grid on
+title('Pasos'), xlabel('Épocas'), ylabel('Num Pasos')
+subplot(3,1,2), plot(1:num_episodes, total_returns), grid on
+title('Retornos'), xlabel('Épocas'), ylabel('Retorno')
+subplot(3,1,3), plot(1:num_episodes, total_loss), grid on
+title('Pérdida'), xlabel('Épocas'), ylabel('Error MSE')
 draw_maze(M, start_position, policy, [goal_row goal_col])
 function model_copy = copy_weights(model_original, model_copy)
     for i = 1 : model_original.num_layers

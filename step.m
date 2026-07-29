@@ -4,7 +4,6 @@ j = state(2);
 done = 0;
 new_i = i + actions(action, 1);
 new_j = j + actions(action, 2);
-
 if new_i < 1 || new_i > m || new_j < 1 || new_j > n || M(new_i, new_j) == -2
     reward = -2;
     new_i = i;
@@ -15,5 +14,4 @@ else
         done = 1;
     end
 end
-
 next_state = [new_i new_j];

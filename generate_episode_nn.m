@@ -6,18 +6,13 @@ states = zeros(max_steps, length(start_position));
 actions_taken = zeros(max_steps, 1);
 rewards = zeros(max_steps, 1);
 step = 1;
-
 while ~isequal(state, goal_position) && step <= max_steps
     states(step, :) = state;
-
     state_norm = normalize_state(state, m, n);
-    
     actions_probabilities = policy.predict(state_norm);
     action = randsample(1:num_actions, 1, true, actions_probabilities);
-
     next_i = i + actions(action, 1);
     next_j = j + actions(action, 2);
-
     if next_i < 1 || next_i > m || next_j < 1 || next_j > n || M(next_i, next_j) == -2
         reward = -2;
     else
@@ -25,14 +20,11 @@ while ~isequal(state, goal_position) && step <= max_steps
         i = next_i;
         j = next_j;
     end
-
     state = [i j];
     actions_taken(step) = action;
     rewards(step) = reward;
-
     step = step + 1;
 end
-
 states = states(1 : step-1, :);
 actions_taken = actions_taken(1 : step-1);
 rewards = rewards(1 : step-1);

@@ -1,5 +1,4 @@
 function draw_heatmap(V)
-
 figure
 data = V;
 data(V==0) = NaN;
