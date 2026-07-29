@@ -5,7 +5,7 @@ start_position = [1 2];
 [goal_row, goal_col] = find(M==10);
 [m, n] = size(M);
 num_actions = length(actions);
-gamma = 0.999;
+gamma = 0.99;
 epsilon = 1;
 min_epsilon = 0.01;
 decay = 0.99;
