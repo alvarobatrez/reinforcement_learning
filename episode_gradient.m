@@ -16,7 +16,10 @@ function [grad, loss, G0, H] = episode_gradient(model, states, actions_taken, re
     indices = sub2ind(size(probabilities), (1:T)', actions_taken);
     action_log_probabilities = log_probabilities(indices);
 
-    weight = gamma.^((0:T - 1)') .* (G - baseline);
+    A = G - baseline;
+    A = A / (std(A) + 1e-8);
+
+    weight = gamma.^((0:T - 1)') .* A;
     loss = sum(-weight .* action_log_probabilities - beta * H);
 
     one_hot = zeros(size(probabilities));
@@ -35,8 +38,9 @@ function [grad, loss, G0, H] = episode_gradient(model, states, actions_taken, re
 
     grad = cell(1, model.num_layers);
     for i = 1 : model.num_layers
-        grad{i} = delta{i}' * [ones(T, 1), outputs{i}];
+        grad{i} = delta{i}' * [ones(T, 1), outputs{i}] / T;
     end
-
+    
+    loss = loss / T;
     H = mean(H);
 end
