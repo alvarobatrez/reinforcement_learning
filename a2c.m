@@ -1,16 +1,16 @@
 close all; clear, clc
-M = create_maze();
+M = create_medium_maze();
 actions = [-1 0; 0 1; 1 0; 0 -1];
 start_position = [1 2];
 [goal_row, goal_col] = find(M==10);
 [m, n] = size(M);
 num_actions = length(actions);
-gamma = 0.999;
+gamma = 0.99;
 beta = 0.1;
 min_beta = 0.01;
 decay = 0.995;
-num_episodes = 20000;
-max_steps = 5e3;
+num_episodes = 1000;
+max_steps = 5e4;
 num_envs = feature('numcores');
 p = gcp('nocreate');
 if isempty(p)
@@ -51,7 +51,7 @@ for episode = 1 : num_episodes
         rewards = zeros(max_steps, 1);
         dones = zeros(max_steps, 1);
         t = 0;
-        while ~isequal(state, [goal_row goal_col]) && t <= max_steps
+        while ~isequal(state, [goal_row goal_col]) && t < max_steps
             t = t + 1;
             states(t, :) = state;
             state_norm = normalize_state(state, m, n);
@@ -81,8 +81,8 @@ for episode = 1 : num_episodes
     end
     avg_actor_grad = average_grad(actor, actor_grads, num_envs);
     avg_critic_grad = average_grad(critic, critic_grads, num_envs);
-    actor.update_weights(avg_actor_grad);
-    critic.update_weights(avg_critic_grad);
+    actor = actor.update_weights(avg_actor_grad);
+    critic = critic.update_weights(avg_critic_grad);
     mean_steps = mean(steps);
     total_steps(episode) = mean_steps;
     total_returns(episode) = mean(returns);
@@ -92,7 +92,7 @@ for episode = 1 : num_episodes
     fprintf('Episodio: %d, Pasos: %.1f, Retorno: %.1f, Pérdida Actor: %.4f, Pérdida Crítico: %.4f, Entropía: %.4f\n', episode, mean_steps, total_returns(episode), total_actor_loss(episode), total_critic_loss(episode), total_h(episode))
 end
 delete(gcp('nocreate'));
-optimal_path = create_path(policy, M);
+optimal_path = create_path(actor, M);
 subplot(3,2,1), semilogy(1:num_episodes, total_steps), grid on
 title('Pasos'), xlabel('Épocas'), ylabel('Num Pasos')
 subplot(3,2,2), plot(1:num_episodes, total_returns), grid on
