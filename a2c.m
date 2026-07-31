@@ -1,16 +1,16 @@
 close all; clear, clc
-M = create_medium_maze();
+M = create_maze();
 actions = [-1 0; 0 1; 1 0; 0 -1];
 start_position = [1 2];
 [goal_row, goal_col] = find(M==10);
 [m, n] = size(M);
 num_actions = length(actions);
-gamma = 0.99;
+gamma = 0.999;
 beta = 0.1;
 min_beta = 0.01;
 decay = 0.995;
-num_episodes = 1000;
-max_steps = 5e4;
+num_episodes = 20000;
+max_steps = 5e3;
 num_envs = feature('numcores');
 p = gcp('nocreate');
 if isempty(p)
@@ -69,10 +69,14 @@ for episode = 1 : num_episodes
         actions_taken = actions_taken(1:t);
         rewards = rewards(1:t);
         dones = dones(1:t);
+        G = zeros(t, 1);
+        G(t) = rewards(t);
+        for k = t - 1 : -1 : 1
+            G(k) = rewards(k) + gamma * G(k + 1);
+        end
         states_norm = normalize_state(states, m, n);
-        next_states_norm = normalize_state(next_states, m, n);
         values = critic.predict(states_norm);
-        targets = rewards + (1 - dones) .* gamma .* critic.predict(next_states_norm);
+        targets = G;
         critic_grads{env} = critic_gradient(critic, states_norm, targets);
         critic_losses(env) = mean((targets - values).^2);
         [actor_grads{env}, actor_losses(env), H(env)] = actor_gradient(actor, states_norm, actions_taken, targets, values, beta);
