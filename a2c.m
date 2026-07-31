@@ -65,7 +65,7 @@ for episode = 1 : num_episodes
             state = next_state;
         end
         states = states(1:t, :);
-        next_states = next_state(1:t, :);
+        next_states = next_states(1:t, :);
         actions_taken = actions_taken(1:t);
         rewards = rewards(1:t);
         dones = dones(1:t);
