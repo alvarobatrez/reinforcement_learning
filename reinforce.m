@@ -1,15 +1,15 @@
 close all; clear, clc
-M = create_maze();
+M = create_medium_maze();
 actions = [-1 0; 0 1; 1 0; 0 -1];
 start_position = [1 2];
 [goal_row, goal_col] = find(M==10);
 [m, n] = size(M);
 num_actions = length(actions);
-gamma = 0.999;
+gamma = 0.99;
 beta = 0.1;
 min_beta = 0.01;
-decay = 0.995;
-num_episodes = 20000;
+decay = 0.99;
+num_episodes = 2000;
 max_steps = 5e3;
 num_envs = feature('numcores');
 p = gcp('nocreate');
@@ -19,7 +19,7 @@ else
     fprintf('Parallel environment with %d workers\n', p.NumWorkers);
 end
 num_inputs = 2;
-layers = {{128, 'relu'} {128, 'relu'} {num_actions, 'softmax'}};
+layers = {{64, 'relu'} {64, 'relu'} {num_actions, 'softmax'}};
 learning_rate = 0.001;
 optimizer = 'adam';
 loss_function = 'cross_entropy';
@@ -67,13 +67,13 @@ for episode = 1 : num_episodes
     fprintf('Episodio: %d, Pasos: %.1f, Retorno: %.1f, Pérdida: %.4f, Entropía: %.4f\n', episode, mean_steps, total_returns(episode), total_loss(episode), total_h(episode))
 end
 optimal_path = create_path(policy, M);
-subplot(4,1,1), semilogy(1:num_episodes, total_steps), grid on
+subplot(2,2,1), plot(1:num_episodes, total_steps), grid on
 title('Pasos'), xlabel('Épocas'), ylabel('Num Pasos')
-subplot(4,1,2), plot(1:num_episodes, total_returns), grid on
+subplot(2,2,2), plot(1:num_episodes, total_returns), grid on
 title('Retornos'), xlabel('Épocas'), ylabel('Retorno')
-subplot(4,1,3), plot(1:num_episodes, total_loss), grid on
+subplot(2,2,3), plot(1:num_episodes, total_loss), grid on
 title('Pérdida'), xlabel('Épocas'), ylabel('Error')
-subplot(4,1,4), plot(1:num_episodes, total_h), grid on
+subplot(2,2,4), plot(1:num_episodes, total_h), grid on
 title('Entropía'), xlabel('Épocas'), ylabel('Entropía')
 draw_maze(M, start_position, optimal_path, [goal_row goal_col])
 delete(gcp('nocreate'));

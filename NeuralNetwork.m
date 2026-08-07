@@ -118,9 +118,6 @@ classdef NeuralNetwork
             end
         end
         function grad = clip_grad_norm(model, grad, max_norm)
-            % Equivalente a torch.nn.utils.clip_grad_norm_:
-            % norma L2 global de todos los gradientes; si supera max_norm
-            % se reescalan todos por max_norm / ||g||.
             total_norm = 0;
             for i = 1 : model.num_layers
                 total_norm = total_norm + sum(grad{i}(:).^2);

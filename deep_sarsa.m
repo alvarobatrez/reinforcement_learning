@@ -1,5 +1,5 @@
 close all; clear; clc
-M = create_maze();
+M = create_medium_maze();
 actions = [-1 0; 0 1; 1 0; 0 -1];
 start_position = [1 2];
 [goal_row, goal_col] = find(M==10);
@@ -10,13 +10,13 @@ gamma = 0.99;
 epsilon = 1;
 min_epsilon = 0.01;
 decay = 0.99;
-num_episodes = 1000;
-max_steps = 5e4;
-buffer_capacity = 1e5;
+num_episodes = 500;
+max_steps = 5e3;
+buffer_capacity = 1e4;
 batch_size = 128;
 buffer = ExperienceReplay(buffer_capacity);
 num_inputs = 2;
-layers = {{128, 'relu'} {128, 'relu'} {num_actions, 'linear'}};
+layers = {{64, 'relu'} {64, 'relu'} {num_actions, 'linear'}};
 learning_rate = 0.001;
 optimizer = 'adam';
 loss_function = 'mse';
@@ -63,7 +63,7 @@ for episode = 1 : num_episodes
     fprintf('Episodio: %d, Pasos: %d, Retorno: %d, Pérdida: %.4f\n', episode, steps, G, loss)
 end
 policy = create_policy(q_network, M);
-subplot(3,1,1), semilogy(1:num_episodes, total_steps), grid on
+subplot(3,1,1), plot(1:num_episodes, total_steps), grid on
 title('Pasos'), xlabel('Épocas'), ylabel('Num Pasos')
 subplot(3,1,2), plot(1:num_episodes, total_returns), grid on
 title('Retornos'), xlabel('Épocas'), ylabel('Retorno')
