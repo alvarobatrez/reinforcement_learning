@@ -117,19 +117,6 @@ classdef NeuralNetwork
                 end
             end
         end
-        function grad = clip_grad_norm(model, grad, max_norm)
-            total_norm = 0;
-            for i = 1 : model.num_layers
-                total_norm = total_norm + sum(grad{i}(:).^2);
-            end
-            total_norm = sqrt(total_norm);
-            if total_norm > max_norm
-                scale = max_norm / (total_norm + 1e-6);
-                for i = 1 : model.num_layers
-                    grad{i} = grad{i} * scale;
-                end
-            end
-        end
         function [model, history] = train(model, X, Y, epochs)
             model.t = 0;
             history = zeros(epochs, 1);
